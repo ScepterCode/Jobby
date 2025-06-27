@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Job Lead Finder</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    .message-box {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .message-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .message-box.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 font-[Inter]">
+  <div class="container mx-auto py-10 px-4 max-w-md">
+    <h1 class="text-2xl font-semibold mb-6 text-center">Job Lead Finder</h1>
+    <form id="leadForm" class="bg-white p-6 rounded-lg shadow-md">
+      <div class="mb-4">
+        <label for="website" class="block text-sm font-medium">Website</label>
+        <input type="text" id="website" name="website" required class="mt-1 p-2 block w-full border rounded-md"/>
+      </div>
+      <div class="mb-4">
+        <label for="location" class="block text-sm font-medium">Location</label>
+        <input type="text" id="location" name="location" required class="mt-1 p-2 block w-full border rounded-md"/>
+      </div>
+      <div class="mb-4">
+        <label for="query" class="block text-sm font-medium">Search Query</label>
+        <input type="text" id="query" name="query" required class="mt-1 p-2 block w-full border rounded-md"/>
+      </div>
+      <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit</button>
+    </form>
+    <div id="message" class="message-box success">Submitted!</div>
+  </div>
+
+  <script>
+    const form = document.getElementById('leadForm');
+    const messageBox = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const website = form.website.value.trim();
+      const location = form.location.value.trim();
+      const query = form.query.value.trim();
+      const googleSearchURL = `https://www.google.com/search?q=site:${website}+${location}+${query}`;
+
+      const payload = {
+        website,
+        location,
+        query,
+        googleSearchURL
+      };
+
+      try {
+        const response = await fetch('https://scepter0001.app.n8n.cloud/webhook/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (response.ok) {
+          showMessage("Success! Your search was sent.");
+          form.reset();
+        } else {
+          showMessage("Error submitting form. Try again.", true);
+        }
+      } catch (error) {
+        console.error(error);
+        showMessage("Network error. Try again.", true);
+      }
+    });
+
+    function showMessage(msg, isError = false) {
+      messageBox.textContent = msg;
+      messageBox.classList.add('show');
+      messageBox.classList.toggle('success', !isError);
+      setTimeout(() => {
+        messageBox.classList.remove('show');
+      }, 3000);
+    }
+  </script>
+</body>
+</html>
